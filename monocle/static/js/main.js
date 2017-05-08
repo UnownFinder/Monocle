@@ -357,18 +357,20 @@ overlays.ScanArea.addTo(map);
 
 var control = L.control.layers(null, overlays).addTo(map);
 
-//Safari has poor support for caching
-if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1){ 
+//Safari has poor support for caching.  Ask Safari users to use cache.  Thanks for the Leaflet tip hunda!
+if (L.Browser.safari){ 
     var mapLayer.tileLayer(_MapProviderUrl, {
-        opacity: 0.75,
+        opacity: 1.0,
         attribution: _MapProviderAttribution,
-        useCache: false
+        size: 50,
+        useCache: true,
+        crossOrigin: true
     });
 }
 else
 {
     var mapLayer.tileLayer(_MapProviderUrl, {
-        opacity: 0.75,
+        opacity: 1.0,
         attribution: _MapProviderAttribution,
         useCache: true,
         crossOrigin: true
