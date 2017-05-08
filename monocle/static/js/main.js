@@ -356,10 +356,34 @@ overlays.Pokemon.addTo(map);
 overlays.ScanArea.addTo(map);
 
 var control = L.control.layers(null, overlays).addTo(map);
-L.tileLayer(_MapProviderUrl, {
-    opacity: 0.75,
-    attribution: _MapProviderAttribution
-}).addTo(map);
+
+//Safari has poor support for caching
+if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1){ 
+    var mapLayer.tileLayer(_MapProviderUrl, {
+        opacity: 0.75,
+        attribution: _MapProviderAttribution,
+        useCache: false
+    });
+}
+else
+{
+    var mapLayer.tileLayer(_MapProviderUrl, {
+        opacity: 0.75,
+        attribution: _MapProviderAttribution,
+        useCache: true,
+        crossOrigin: true
+    });
+    //window.onload = seed();
+}   
+    
+mapLayer.addTo(map);
+
+//Seed images on client.  This is very dangerous and can slow down map loading. Implement on your own above if you dare
+function seed() {
+    var bbox = L.latLngBounds(L.latLng(39.50298109,-95.05645752), L.latLng(38.57823197,-94.04502869));
+    mapLayer.seed( bbox, 3, 5 ); //what layers to seed.  First number is the starting layer.  Last is finishing.  The higher the layer, exponentially more images
+}
+
 map.whenReady(function () {
     $('.my-location').on('click', function () {
         map.locate({ enableHighAccurracy: true, setView: true });
