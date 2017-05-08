@@ -210,6 +210,18 @@ def accounts_from_config(pickled_accounts=None):
             accounts[username] = create_account_dict(account)
     return accounts
 
+def accounts_from_config_30(pickled_accounts_30=None):
+    accounts_30 = {}
+    for account_30 in conf.ACCOUNTS_30:
+        username = account_30[0]
+        if pickled_accounts_30 and username in pickled_accounts_30:
+            accounts_30[username] = pickled_accounts_30[username]
+            if len(account_30) == 3 or len(account_30) == 6:
+                accounts_30[username]['password'] = account_30[1]
+                accounts_30[username]['provider'] = account_30[2]
+        else:
+            accounts_30[username] = create_account_dict(account_30)
+    return accounts_30
 
 def accounts_from_csv(new_accounts, pickled_accounts):
     accounts = {}
@@ -230,6 +242,26 @@ def accounts_from_csv(new_accounts, pickled_accounts):
         account['banned'] = False
         accounts[username] = account
     return accounts
+
+def accounts_from_csv_30(new_accounts_30, pickled_accounts_30):
+    accounts_30 = {}
+    for username_30, account_30 in new_accounts_30.items():
+        if pickled_accounts_30:
+            pickled_account_30 = pickled_accounts_30.get(username)
+            if pickled_account_30:
+                if pickled_account_30['password'] != account_30['password']:
+                    del pickled_account_30['password']
+                account_30.update(pickled_account_30)
+            accounts_30[username] = account_30
+            continue
+        account_30['provider'] = account_30.get('provider') or 'ptc'
+        if not all(account_30.get(x) for x in ('model', 'iOS', 'id')):
+            account_30 = generate_device_info(account)
+        account_30['time'] = 0
+        account_30['captcha'] = False
+        account_30['banned'] = False
+        accounts_30[username] = account_30
+    return accounts_30
 
 
 if conf.SPAWN_ID_INT:
@@ -290,7 +322,6 @@ def dump_pickle(name, var):
     with open(location, 'wb') as f:
         pickle_dump(var, f, HIGHEST_PROTOCOL)
 
-
 def load_accounts():
     pickled_accounts = load_pickle('accounts')
 
@@ -311,6 +342,23 @@ def load_accounts():
     dump_pickle('accounts', accounts)
     return accounts
 
+def load_accounts_30():
+    pickled_accounts_30 = load_pickle('accounts_30')
+
+    if conf.ACCOUNTS_30:
+        accounts_30 = load_accounts_csv_30()
+        if pickled_accounts_30 and set(pickled_accounts_30) == set(accounts_30):
+            return pickled_accounts_30
+        else:
+            accounts_30 = accounts_from_csv_30(accounts_30, pickled_accounts_30)
+    elif conf.ACCOUNTS:
+        if pickled_accounts_30 and set(pickled_accounts_30) == set(acc[0] for acc in conf.ACCOUNTS_30):
+            return pickled_accounts_30
+        else:
+            accounts_30 = accounts_from_config_30(pickled_accounts_30)
+   
+    dump_pickle('accounts_30', accounts_30)
+    return accounts_30
 
 def load_accounts_csv():
     csv_location = join(conf.DIRECTORY, conf.ACCOUNTS_CSV)
@@ -321,6 +369,14 @@ def load_accounts_csv():
             accounts[row['username']] = dict(row)
     return accounts
 
+def load_accounts_csv_30():
+    csv_location_30 = join(conf.DIRECTORY, conf.ACCOUNTS_CSV_30)
+    with open(csv_location_30, 'rt') as f:
+        accounts_30 = {}
+        reader = DictReader(f)
+        for row in reader:
+            accounts_30[row['username']] = dict(row)
+    return accounts_30
 
 def randomize_point(point, amount=0.0003, randomize=uniform):
     '''Randomize point, by up to ~47 meters by default.'''

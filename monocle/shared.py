@@ -8,10 +8,12 @@ from aiopogo import json_dumps
 from aiopogo.session import SESSIONS
 
 from .utils import load_accounts
+from .utils import load_accounts_30
 
 
 LOOP = get_event_loop()
 ACCOUNTS = load_accounts()
+ACCOUNTS_30 = load_accounts_30()
 
 
 class SessionManager:
