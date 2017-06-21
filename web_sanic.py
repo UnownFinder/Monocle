@@ -13,7 +13,6 @@ from monocle.bounds import center
 from monocle.names import DAMAGE, MOVES, POKEMON
 from monocle.web_utils import get_scan_coords, get_worker_markers, Workers, get_args
 
-
 env = Environment(loader=PackageLoader('monocle', 'templates'))
 app = Sanic(__name__)
 app.static('/static', resource_filename('monocle', 'static'))
@@ -97,7 +96,7 @@ async def pokemon_data(request, _time=time):
     last_id = request.args.get('last_id', 0)
     async with app.pool.acquire() as conn:
         results = await conn.fetch('''
-            SELECT id, pokemon_id, expire_timestamp, lat, lon, atk_iv, def_iv, sta_iv, move_1, move_2
+            SELECT id, pokemon_id, expire_timestamp, lat, lon, form
             FROM sightings
             WHERE expire_timestamp > {} AND id > {}
         '''.format(_time(), last_id))
@@ -167,16 +166,8 @@ def sighting_to_marker(pokemon, names=POKEMON, moves=MOVES, damage=DAMAGE, trash
         'lon': pokemon['lon'],
         'expires_at': pokemon['expire_timestamp'],
     }
-    move1 = pokemon['move_1']
-    if move1:
-        move2 = pokemon['move_2']
-        marker['atk'] = pokemon['atk_iv']
-        marker['def'] = pokemon['def_iv']
-        marker['sta'] = pokemon['sta_iv']
-        marker['move1'] = moves[move1]
-        marker['move2'] = moves[move2]
-        marker['damage1'] = damage[move1]
-        marker['damage2'] = damage[move2]
+    if pokemon['form']:
+        marker['form'] = chr(pokemon['form']+64)
     return marker
 
 
