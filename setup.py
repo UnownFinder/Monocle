@@ -17,6 +17,7 @@ setup(
     zip_safe=False,
     scripts=('scan.py', 'web.py', 'web_sanic.py', 'gyms.py', 'solve_captchas.py'),
     install_requires=[
+        'Cython',
         'geopy>=1.11.0',
         'protobuf>=3.0.0',
         'flask>=0.11.1',

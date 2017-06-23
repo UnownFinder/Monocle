@@ -23,6 +23,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew install python3; fi
 
 install:
+  - pip3 install Cython -vv
   - pip3 install -r requirements.txt
   - python3 setup.py install
 
